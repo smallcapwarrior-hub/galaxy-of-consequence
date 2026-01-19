@@ -1,43 +1,40 @@
-import { db } from "../../db";
-import { conversations, messages } from "@shared/schema";
-import { eq, desc } from "drizzle-orm";
+import { Session, InsertSession } from "@shared/schema";
 
-export interface IChatStorage {
-  getConversation(id: number): Promise<typeof conversations.$inferSelect | undefined>;
-  getAllConversations(): Promise<(typeof conversations.$inferSelect)[]>;
-  createConversation(title: string): Promise<typeof conversations.$inferSelect>;
-  deleteConversation(id: number): Promise<void>;
-  getMessagesByConversation(conversationId: number): Promise<(typeof messages.$inferSelect)[]>;
-  createMessage(conversationId: number, role: string, content: string): Promise<typeof messages.$inferSelect>;
+export interface IStorage {
+  getSession(sessionId: string): Promise<Session | undefined>;
+  createSession(session: InsertSession): Promise<Session>;
+  updateSession(sessionId: string, worldState: any): Promise<Session>;
 }
 
-export const chatStorage: IChatStorage = {
-  async getConversation(id: number) {
-    const [conversation] = await db.select().from(conversations).where(eq(conversations.id, id));
-    return conversation;
-  },
+export class MemStorage implements IStorage {
+  private sessions: Map<string, Session>;
+  private currentId: number;
 
-  async getAllConversations() {
-    return db.select().from(conversations).orderBy(desc(conversations.createdAt));
-  },
+  constructor() {
+    this.sessions = new Map();
+    this.currentId = 1;
+  }
 
-  async createConversation(title: string) {
-    const [conversation] = await db.insert(conversations).values({ title }).returning();
-    return conversation;
-  },
+  async getSession(sessionId: string): Promise<Session | undefined> {
+    return this.sessions.get(sessionId);
+  }
 
-  async deleteConversation(id: number) {
-    await db.delete(messages).where(eq(messages.conversationId, id));
-    await db.delete(conversations).where(eq(conversations.id, id));
-  },
+  async createSession(insertSession: InsertSession): Promise<Session> {
+    const id = this.currentId++;
+    const session: Session = { ...insertSession, id, createdAt: new Date().toISOString() };
+    this.sessions.set(insertSession.sessionId, session);
+    return session;
+  }
 
-  async getMessagesByConversation(conversationId: number) {
-    return db.select().from(messages).where(eq(messages.conversationId, conversationId)).orderBy(messages.createdAt);
-  },
+  async updateSession(sessionId: string, worldState: any): Promise<Session> {
+    const session = this.sessions.get(sessionId);
+    if (!session) {
+      throw new Error("Session not found");
+    }
+    const updatedSession = { ...session, worldState };
+    this.sessions.set(sessionId, updatedSession);
+    return updatedSession;
+  }
+}
 
-  async createMessage(conversationId: number, role: string, content: string) {
-    const [message] = await db.insert(messages).values({ conversationId, role, content }).returning();
-    return message;
-  },
-};
-
+export const storage = new MemStorage();
