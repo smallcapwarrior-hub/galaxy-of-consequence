@@ -1,0 +1,144 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&family=Orbitron:wght@400;500;700;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================
+   ROOT VARIABLES — GALACTIC TERMINAL
+   ========================= */
+:root {
+  --background: 240 20% 3%;
+  --foreground: 150 100% 50%;
+
+  --primary: 150 100% 50%;
+  --secondary: 180 100% 50%;
+  --accent: 30 100% 50%;
+  --border: 150 50% 20%;
+
+  --font-mono: 'Fira Code', monospace;
+  --font-display: 'Orbitron', sans-serif;
+
+  /* Layout constants */
+  --hud-height: 88px;
+  --command-height: 76px;
+
+  --scanline-opacity: 0.08;
+}
+
+/* =========================
+   BASE
+   ========================= */
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-mono);
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  overflow: hidden; /* IMPORTANT */
+}
+
+/* =========================
+   APP SHELL — CRITICAL
+   ========================= */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100svh;
+  width: 100%;
+}
+
+/* =========================
+   HUD (NON-SCROLLING)
+   ========================= */
+.hud {
+  height: var(--hud-height);
+  flex-shrink: 0;
+  background: rgba(5, 11, 16, 0.97);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid hsl(var(--border));
+  z-index: 10;
+}
+
+/* =========================
+   STORY LOG (ONLY SCROLLER)
+   ========================= */
+.story-log {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem 1rem 2rem;
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
+}
+
+/* Story blocks */
+.story-block {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+/* Choice buttons INSIDE flow */
+.choice {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 10px;
+  border: 1px solid hsl(var(--primary));
+  background: rgba(0, 255, 180, 0.08);
+  text-align: center;
+  cursor: pointer;
+}
+
+.choice:hover {
+  background: rgba(0, 255, 180, 0.18);
+}
+
+/* =========================
+   COMMAND BAR (NON-SCROLLING)
+   ========================= */
+.command-bar {
+  height: var(--command-height);
+  flex-shrink: 0;
+  background: rgba(5, 11, 16, 0.97);
+  border-top: 1px solid hsl(var(--border));
+  padding: 0.75rem;
+}
+
+/* =========================
+   EFFECTS
+   ========================= */
+.scanlines::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0,0,0,0) 0px,
+    rgba(0,0,0,0) 2px,
+    rgba(0,0,0,var(--scanline-opacity)) 3px,
+    rgba(0,0,0,var(--scanline-opacity)) 4px
+  );
+  z-index: 100;
+}
+
+.text-glow {
+  text-shadow: 0 0 6px currentColor;
+}
+
+/* =========================
+   SCROLLBAR
+   ========================= */
+.story-log::-webkit-scrollbar {
+  width: 8px;
+}
+
+.story-log::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 4px;
+}
